@@ -1,6 +1,8 @@
 <html>
 <head>
   <link href="CSS/simple-sidebar.css" rel="stylesheet">
+  <title> Admin - Add/edit product</title>
+  <link rel="icon" href="images/admin.jfif" type="image/x-icon"> 
 <style>
 
 input[type=text], select, textarea {
@@ -86,7 +88,7 @@ include "menu.php";
       <div class="list-group list-group-flush bg-dark">
         <a href="Admin_products.php" class="list-group-item list-group-item-action bg-dark text-light"><span class="text-nowrap"><i class="fa fa-plus-square"></i> Products</a></span>
         <a href="users.php" class="list-group-item list-group-item-action bg-dark text-light"><span class="text-nowrap"><i class="fa fa-user"></i> Users</a></span>
-        <a href="#" class="list-group-item list-group-item-action bg-dark text-light"><span class="text-nowrap"><i class="fa fa-cog"></i> Settings</a></span>
+        <a href="Admin_orders.php" class="list-group-item list-group-item-action bg-dark text-light"><span class="text-nowrap"><i class="fa fa-cog"></i> Orders</a></span>
         
       </div>
     </div>
@@ -149,14 +151,15 @@ if (isset($_GET['Id']) || isset($_POST['Id'])) {
 
 } else if (isset($_GET['action'])){
   if ($_GET['action'] == "add") {
-      $row = array();
-      $row['Id'] = "new";
-      $row['Name'] = 'name';
-      $row['rating'] = "0";
-      $row['Price'] = "0";
-      $row['Details'] = "Description";
-      $row['img'] = 'https://placehold.it/300';
-      $row['action'] = "new";
+
+    $row = array();
+    $row['Id'] = "new";
+    $row['Name'] = 'name';
+    $row['rating'] = "0";
+    $row['Price'] = "0";
+    $row['Details'] = "Description";
+    $row['img'] = 'https://placehold.it/300';
+    $row['action'] = "new";
      
   } else {
     echo "<script> location.href='Admin_products.php'; </script>";

@@ -1,5 +1,7 @@
 <html>
 <head>
+  <title> Admin - Add/edit user</title>
+  <link rel="icon" href="images/admin.jfif" type="image/x-icon"> 
   <link href="CSS/simple-sidebar.css" rel="stylesheet">
 <style>
 
@@ -86,7 +88,7 @@ include "menu.php";
       <div class="list-group list-group-flush bg-dark">
         <a href="Admin_products.php" class="list-group-item list-group-item-action bg-dark text-light show"><span class="text-nowrap"><i class="fa fa-plus-square"></i> Products</a></span>
         <a href="Admin_users.php" class="list-group-item list-group-item-action bg-dark text-light"><span class="text-nowrap"><i class="fa fa-user"></i> Users</a></span>
-        <a href="#" class="list-group-item list-group-item-action bg-dark text-light"><span class="text-nowrap"><i class="fa fa-cog"></i> Settings</a></span>
+        <a href="Admin_orders.php" class="list-group-item list-group-item-action bg-dark text-light"><span class="text-nowrap"><i class="fa fa-cog"></i> Orders</a></span>
         
       </div>
     </div>
@@ -107,26 +109,46 @@ if (!$conn) {
   die("Connection failed: " .mysqli_connect_error());
 }
 
-if (isset($_GET['id'])) {
-  if (isset($_GET['fname'])) {
-    $id = $_GET['id'];
-    $name = $_GET['fname'];
-    $lname = $_GET['lname'];
-    $email = $_GET['email'];
-    $number = $_GET['number'];
-    $gender = $_GET['gender'];
-    $role = $_GET['role'];
-    $action  = $_GET['action'];
+if (isset($_GET['Id']) || isset($_POST['Id'])) {
+  if (isset($_POST['fname'])) {
+    $id = $_POST['Id'];
+    $name = $_POST['fname'];
+    $lname = $_POST['lname'];
+    $email = $_POST['email'];
+    $number = $_POST['number'];
+    $gender = $_POST['gender'];
+    $role = $_POST['role'];
+    $action  = $_POST['action'];
+    $file_name = $_FILES['image']['name'];
+    if ($action == "old") {
+      $file_name = $id;
+    }
+    
+    if ($name == "" || $lname < 0 || $email == "" || $number == "" || $file_name == "") {
+      if ($action == "old") {
+        echo "<script> location.href='Admin_edituser.php?Id=".$id."'; </script>";
+      } else {
+        echo "<script> location.href='Admin_edituser.php?action=add'; </script>";
+      }
+      $_SESSION["err"] = 1;
+      return;
+    }
     if ($action == "old") {
         $res = $conn->query("UPDATE user SET firstName = '$name', lastName = '$lname', Email = '$email', phoneNumber = '$number', gender = '$gender', Role = '$role' WHERE Id = $id");
     } else {
       $res = $conn->query("INSERT INTO user (firstName, lastName, Email, phoneNumber, gender, Role) VALUES ('$name', '$lname', '$email', '$number', '$gender', '$role')");
     }
-   echo "<script> location.href='users.php'; </script>";
+    if ($id == "new") {
+      $id = $conn->insert_id;
+    }
+    echo "<script>alert('".$_FILES['image']['tmp_name']."');</script>";
+    move_uploaded_file($_FILES['image']['tmp_name'],"images/users/".$id);
+   echo "<script> location.href='Admin_users.php'; </script>";
   } else {
-    $res = $conn->query("SELECT * FROM user WHERE Id=".$_GET['id']."");
+    $res = $conn->query("SELECT * FROM user WHERE Id=".$_GET['Id']."");
     $row = $res->fetch_assoc();
     $row['action'] = "old";
+    $row['img'] = "images/users/".$row['Id'];
   }
 
 } else if (isset($_GET['action'])){
@@ -139,6 +161,7 @@ if (isset($_GET['id'])) {
       $row['phoneNumber'] = "";
       $row['gender'] = "Male";
       $row['Role'] = "1";
+      $row['img'] = 'https://placehold.it/300';
       $row['action'] = "new";
      
   } else {
@@ -152,13 +175,19 @@ if (isset($_GET['id'])) {
 ?>
 
 <div class="container">
-  <form action="Admin_edituser.php">
+  <?php 
+  if ($_SESSION["err"] == 1) {
+    echo "<h5 style='color: red;'>Please enter product name, price, description and upload an image before proceeding. </h5>";
+    $_SESSION["err"] = 0;
+    }
+  ?>
+  <form action="Admin_edituser.php" method="POST" enctype="multipart/form-data">
     <div class="row">
       <div class="col-25">
         <label>First name</label>
       </div>
       <input type="hidden" name="action" id="action" value='<?php echo $row['action'] ?>'>
-      <input type="hidden" name="id" id="id" value='<?php echo $row['Id'] ?>'>
+      <input type="hidden" name="Id" id="Id" value='<?php echo $row['Id'] ?>'>
       <div class="col-75">
         <input type="text" id="fname" name="fname" value='<?php echo $row['firstName'] ?>'>
       </div>
@@ -212,12 +241,35 @@ if (isset($_GET['id'])) {
         </select>
       </div>
     </div>
-
+    <div class="row">
+      <div class="col-25">
+        <label>Upload image</label>
+      </div>
+      <div class="col-75">
+        <input type="file" id="image" name="image" class="file" onchange="putImage()" accept="image/*">
+          <img style="max-width: 300px; max-height: 300px;" src=<?php echo $row['img'] ?> id="target" id="preview" class="img-thumbnail">
+      </div>
+    </div>
     <div class="row">
       <input type="submit" value="Submit">
     </div>
   </form>
 </div>  
+<script>
+  function showImage(src, target) {
+    var fr = new FileReader();
+    fr.onload = function(){
+        target.src = fr.result;
+    }
+    fr.readAsDataURL(src.files[0]);
+}
+
+function putImage() {
+    var src = document.getElementById("image");
+    var target = document.getElementById("target");
+    showImage(src, target);
+}
+</script>
 
       </div>
     </div>
